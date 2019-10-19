@@ -17,9 +17,9 @@ import time
 
 
 #---------------------
-# _MyCallback
+# _my_callback
 #--------------------- 
-def _MyCallback( hwnd, extra ):
+def _my_callback(hwnd, extra):
     windows = extra
     temp=[]
     temp.append(hex(hwnd))
@@ -52,11 +52,8 @@ def test_enum_windows():
 # move_and_click
 #---------------------
 def move_and_click(x,y):
-    #鼠标定位到(30,50)
     win32api.SetCursorPos([x,y])
-    #执行左单键击，若需要双击则延时几毫秒再点击一次即可
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP | win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
-    #右键单击
     win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP | win32con.MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0)
   
 #---------------------
@@ -320,95 +317,99 @@ def t4():
 # order_buy
 #---------------------     
 def order_buy(vol,up,down):
-    print('buy:',vol,up,down)
-    windows = {}
-    win32gui.EnumWindows(_MyCallback, windows)
-    print("Enumerated a total of  windows with %d classes" ,(len(windows)))
-    #print('------------------------------')
-    #print classes
-    #print '-------------------------------'
-    for item in windows:
-        if (windows[item][1].find('Meta') >= 0): 
-            
-            #print(windows[item])
-            win32gui.SetForegroundWindow(item)
-            key_input2('F9')
-            time.sleep(1)
+    try:
+        print('buy:',vol,up,down)
+        windows = {}
+        win32gui.EnumWindows(_my_callback, windows)
+        print("Enumerated a total of  windows with %d classes" ,(len(windows)))
+        #print('------------------------------')
+        #print classes
+        #print '-------------------------------'
+        for item in windows:
+            if (windows[item][1].find('Meta') >= 0): 
+                
+                #print(windows[item])
+                win32gui.SetForegroundWindow(item)
+                key_input2('F9')
+                time.sleep(1)
 
-            #left, top, right, bottom = win32gui.GetWindowRect(item)
-            #print('win pos:',left,top,right,bottom)
-            windows2 = {}
-            win32gui.EnumWindows(_MyCallback, windows2)
-            for item2 in windows2:
-                #print(windows2[item2])
-                #if (windows[item2][1].find('Dialog box') >= 0):
-                if windows2[item2][2] == '订单':
-                    print('订单------------------')                
-                    
-                    hwndChildList = get_child_windows(item2)
-                    #print('hwndChildList:',hwndChildList)
-                    print('---------step 1------------')
-                    # step1: fill vol
-                    i = 0
-                    for subitem in hwndChildList:
-                        title = win32gui.GetWindowText(subitem)     
-                        clsname = win32gui.GetClassName(subitem)  
-                        #print(title,clsname)
-                        if clsname == 'Edit' and i == 0:
-                            win32gui.SendMessage(subitem,win32con.WM_SETTEXT,None,str(vol))
-                            i = 1
-                            continue
-                            
-                        if clsname == 'Edit' and i == 1:
-                            win32gui.SendMessage(subitem,win32con.WM_SETTEXT,None,str(down))
-                            i = 2
-                            continue
+                #left, top, right, bottom = win32gui.GetWindowRect(item)
+                #print('win pos:',left,top,right,bottom)
+                windows2 = {}
+                win32gui.EnumWindows(_my_callback, windows2)
+                for item2 in windows2:
+                    #print(windows2[item2])
+                    #if (windows[item2][1].find('Dialog box') >= 0):
+                    if windows2[item2][2] == '订单':
+                        print('订单------------------')                
                         
-                        if clsname == 'Edit' and i == 2:
-                            win32gui.SendMessage(subitem,win32con.WM_SETTEXT,None,str(up))
-                            i = 3
-                            break
-                    
-                    if i != 3:
-                        return -1
-                    # step4: click
-                    
-                    for subitem in hwndChildList:
-                        title = win32gui.GetWindowText(subitem)     
-                        clsname = win32gui.GetClassName(subitem)  
-                        if title == '于市价买':
-                            #print(subitem,title,clsname)
-                            click_button_by_msg(subitem)
-                            
-                    time.sleep(3)
-                    # step5: confirm execution
-                    print('------------ confirm execution ----------')
-                    windows2 = {}
-                    err_index = 0
-                    win32gui.EnumWindows(_MyCallback, windows2)
-                    for item2 in windows2:
-                        if windows2[item2][2] == '订单':            
-                            hwndChildList2 = get_child_windows(item2)
-
-                            for subitem2 in hwndChildList2:
-                                title = win32gui.GetWindowText(subitem2)     
-                                clsname = win32gui.GetClassName(subitem2)  
-                                print(title,clsname)
-                                if title == '请检查操作参数再重试.' and clsname == 'Static':
-                                    print('found:','请检查操作参数再重试')
-                                    err_index += 1
+                        hwndChildList = get_child_windows(item2)
+                        #print('hwndChildList:',hwndChildList)
+                        print('---------step 1------------')
+                        # step1: fill vol
+                        i = 0
+                        for subitem in hwndChildList:
+                            title = win32gui.GetWindowText(subitem)     
+                            clsname = win32gui.GetClassName(subitem)  
+                            #print(title,clsname)
+                            if clsname == 'Edit' and i == 0:
+                                win32gui.SendMessage(subitem,win32con.WM_SETTEXT,None,str(vol))
+                                i = 1
+                                continue
                                 
-                                if title == 'OK' and clsname == 'Button':
-                                    print('found ok button, click it')
-                                    click_button_by_msg(subitem2)
-                                    
-                    if err_index > 0:
-                        return -2
-                    else:
-                        return 0
+                            if clsname == 'Edit' and i == 1:
+                                win32gui.SendMessage(subitem,win32con.WM_SETTEXT,None,str(down))
+                                i = 2
+                                continue
+                            
+                            if clsname == 'Edit' and i == 2:
+                                win32gui.SendMessage(subitem,win32con.WM_SETTEXT,None,str(up))
+                                i = 3
+                                break
                         
-    return -3    
+                        if i != 3:
+                            return -1
+                        # step4: click
+                        
+                        for subitem in hwndChildList:
+                            title = win32gui.GetWindowText(subitem)     
+                            clsname = win32gui.GetClassName(subitem)  
+                            if title == '于市价买':
+                                #print(subitem,title,clsname)
+                                click_button_by_msg(subitem)
+                                
+                        time.sleep(3)
+                        # step5: confirm execution
+                        print('------------ confirm execution ----------')
+                        windows2 = {}
+                        err_index = 0
+                        win32gui.EnumWindows(_my_callback, windows2)
+                        for item2 in windows2:
+                            if windows2[item2][2] == '订单':            
+                                hwndChildList2 = get_child_windows(item2)
 
+                                for subitem2 in hwndChildList2:
+                                    title = win32gui.GetWindowText(subitem2)     
+                                    clsname = win32gui.GetClassName(subitem2)  
+                                    print(title,clsname)
+                                    if title == '请检查操作参数再重试.' and clsname == 'Static':
+                                        print('found:','请检查操作参数再重试')
+                                        err_index += 1
+                                    
+                                    if title == 'OK' and clsname == 'Button':
+                                        print('found ok button, click it')
+                                        click_button_by_msg(subitem2)
+                                        
+                        if err_index > 0:
+                            return -2
+                        else:
+                            return 0
+                            
+        return -3    
+    except Exception as e:
+        print('order_buy exception:',str(e))
+        return -4
+        
 #---------------------
 # order_close
 #---------------------     
